@@ -1,11 +1,14 @@
 package main
 
 import (
-	"cafedex-backend/db"
 	"context"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/cafedex-backend/db"
+	"github.com/cafedex-backend/handlers"
+	"github.com/cafedex-backend/services"
 )
 
 type Application struct {
