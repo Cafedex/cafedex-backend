@@ -5,18 +5,18 @@ import (
 	"log"
 	"os"
 
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var collection *mongo.Collection
 
 func ConnectToMongo() (*mongo.Client, error) {
 
-	clientOptions := option.Client().ApplyURI("mongodb://localhost:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 
 	username := os.Getenv("MONGO_DB_USERNAME")
-	username := os.Getenv("MONGO_DB_PASSWORD")
+	password := os.Getenv("MONGO_DB_PASSWORD")
 
 	clientOptions.SetAuth(options.Credential{
 		Username: username,
@@ -29,7 +29,7 @@ func ConnectToMongo() (*mongo.Client, error) {
 		return nil, err
 	}
 
-	log.Println("Connected to mongo")
+	log.Println("Connected to mongo.....")
 
 	return client, nil
 }
