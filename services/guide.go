@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"log"
-	"time"
+	"net/http"
 
+	"github.com/cafedex-backend/db"
 	"github.com/cafedex-backend/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,7 +25,7 @@ func New(mongo *mongo.Client) UserGuide {
 }
 
 func returnCollectionPointer(collection string) *mongo.Collection {
-	return client.Database("cafedex_db").Collection(collection)
+	return client.Database("Cafedex").Collection(collection)
 }
 
 func GetAllGuides() ([]UserGuide, error) {
@@ -67,7 +69,7 @@ func GetGuideById(id string) (UserGuide, error) {
 
 // func (t *Guide) GetGuideByAuthor(author string) ([]Guide, error) {
 // 	collection := returnCollectionPointer("guides")
-// 	var guides []Guide 
+// 	var guides []Guide
 // 	cursor, err :=collection.Find(context.TODO(), bson.D{})
 // 	if err != nil {
 // 		log.Fatal(err)
@@ -87,7 +89,7 @@ func GetGuideById(id string) (UserGuide, error) {
 // 	return guides, nil
 // }
 
-func UpdateGuide(id string, entry UserGuide){
+func UpdateGuide(id string, entry UserGuide) {
 	// TODO: Create the update schema for the backend
 	// collection := returnCollectionPointer("cafedex-guides")
 	// mongoID, err := primitive.ObjectIDFromHex(id)
@@ -98,46 +100,71 @@ func UpdateGuide(id string, entry UserGuide){
 	// update := bson.D{
 	// 	{"set", bson.D{
 
-
 	// 	}},
 	// }
 
 }
 
-func CreateGuide(entry UserGuide) error{
-	collection := returnCollectionPointer("cafedex-guides")
+// func CreateGuide(w http.ResponseWriter, r *http.Request) error {
+// 	collection := returnCollectionPointer("guides")
 
-	_, err := collection.InsertOne(context.TODO(), UserGuide{
-		Author:     entry.Author,
-		Title: 			entry.Title,
-		CreatedAt: 	time.Now(),
-		UpdatedAt: 	time.Now(),
-	})
+// 	var guide models.Guide
+
+// 	if err := json.NewDecoder(r.Body).Decode(&guide); err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	result, err := collection.InsertOne(context.Background(), guide)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	return nil
+// }
+
+func CreateGuide(w http.ResponseWriter, r *http.Request) {
+	client, err := db.ConnectToMongo()
+	// client := returnCollectionPointer("guides")
 	if err != nil {
-		log.Println("Error:", err)
-		return err
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer client.Disconnect(context.Background())
+
+	var user models.Guide
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	return nil
+	collection := client.Database("Cafedex").Collection("guides")
+	result, err := collection.InsertOne(context.Background(), user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(result)
 }
 
+// func DeleteGuide(id string) error {
+// 	collection := returnCollectionPointer("cafedex-guides")
+// 	mongoID, err := primitive.ObjectIDFromHex(id)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return err
+// 	}
 
-func DeleteGuide(id string) error{
-	collection := returnCollectionPointer("cafedex-guides")
-	mongoID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
+// 	_, err = collection.DeleteOne(
+// 		context.Background(),
+// 		bson.M{"_id": mongoID},
+// 	)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return err
+// 	}
 
-	_, err = collection.DeleteOne(
-		context.Background(),
-		bson.M{"_id": mongoID},
-	)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	return nil
-}
+// 	return nil
+// }

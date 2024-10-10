@@ -12,6 +12,7 @@ import (
 var collection *mongo.Collection
 
 func ConnectToMongo() (*mongo.Client, error) {
+	// uri := os.Getenv("mongodb://localhost:27017")
 
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 
