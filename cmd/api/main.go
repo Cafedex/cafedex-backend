@@ -9,6 +9,8 @@ import (
 	"github.com/cafedex-backend/db"
 	"github.com/cafedex-backend/handlers"
 	"github.com/cafedex-backend/services"
+	"github.com/clerk/clerk-sdk-go/v2"
+
 )
 
 type Application struct {
@@ -16,12 +18,15 @@ type Application struct {
 }
 
 func main() {
+
+	clerk.SetKey("sk_")
+
 	mongoClient, err := db.ConnectToMongo()
 	if err != nil {
 		log.Panic(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Second)
 	defer cancel()
 
 	defer func() {
@@ -33,5 +38,5 @@ func main() {
 	services.New(mongoClient)
 
 	log.Println("Server is running on port",8080)
-	log Fatal(http.ListenAndServe(":8080", handlers.CreateRouter()))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CreateRouter()))
 }
